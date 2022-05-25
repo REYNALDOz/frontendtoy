@@ -56,7 +56,7 @@ const SingleProduct = ({ match }) => {
                         ))}
                       </select>
                     </div>
-                    <button className="round-black-btn">Add To Cart</button>
+                    <button className="round-black-btn" >Add To Cart</button>
                   </>
                 ) : null}
               </div>
