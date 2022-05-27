@@ -1,14 +1,56 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { createOrder } from "../Redux/Actions/OrderActions";
+import { ORDER_CREATE_RESET } from "../Redux/Constants/OrderConstants";
 import Header from "./../components/Header";
 
-const PlaceOrderScreen = () => {
-  window.scrollTo(0, 0);
+const PlaceOrderScreen = ({history}) => {
+    window.scrollTo(0, 0);
 
-  const placeOrderHandler = (e) => {
-    e.preventDefault();
-  };
+    const dispatch = useDispatch();
+    const cart = useSelector((state) => state.cart);
+   
 
+    // Calculate Price
+    const addDecimals = (num) => {
+      return (Math.round(num * 100) / 100).toFixed(2);
+    };
+
+    cart.itemsPrice = addDecimals(
+      cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+    );
+    cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100);
+    cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)));
+    cart.totalPrice = (
+      Number(cart.itemsPrice) +
+      Number(cart.shippingPrice) +
+      Number(cart.taxPrice)
+    ).toFixed(2);
+
+    const orderCreate = useSelector((state) => state.orderCreate);
+    const { order, success } = orderCreate;
+
+    useEffect(() => {
+      if (success) {
+        history.push(`/order/${order._id}`);
+        dispatch({ type: ORDER_CREATE_RESET });
+      }
+    }, [history, dispatch, success, order]);
+
+    const placeOrderHandler = () => {
+      dispatch(
+        createOrder({
+          orderItems: cart.cartItems,
+          shippingAddress: cart.shippingAddress,
+          paymentMethod: cart.paymentMethod,
+          itemsPrice: cart.itemsPrice,
+          shippingPrice: cart.shippingPrice,
+          taxPrice: cart.taxPrice,
+          totalPrice: cart.totalPrice,
+        })
+      );
+    };
   return (
     <>
       <Header />
@@ -73,11 +115,11 @@ const PlaceOrderScreen = () => {
 
             <div className="order-product row">
               <div className="col-md-3 col-6">
-                <img src="/images/5.png" alt="product" />
+                <img src="/images/2.png" alt="product" />
               </div>
               <div className="col-md-5 col-6 d-flex align-items-center">
                 <Link to={"/"}>
-                  <h6>Mini Montaña Rusa</h6>
+                  <h6>Barco Bailarin</h6>
                 </Link>
               </div>
               <div className="mt-3 mt-md-0 col-md-2 col-6  d-flex align-items-center flex-column justify-content-center ">
@@ -86,7 +128,7 @@ const PlaceOrderScreen = () => {
               </div>
               <div className="mt-3 mt-md-0 col-md-2 col-6 align-items-end  d-flex flex-column justify-content-center ">
                 <h4>SUBTOTAL</h4>
-                <h6>$567</h6>
+                <h6>s/.196</h6>
               </div>
             </div>
           </div>
@@ -98,32 +140,30 @@ const PlaceOrderScreen = () => {
                   <td>
                     <strong>Products</strong>
                   </td>
-                  <td>$345</td>
+                  <td>s/.196</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Shipping</strong>
                   </td>
-                  <td>$123</td>
+                  <td>s/.123</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Tax</strong>
                   </td>
-                  <td>$5</td>
+                  <td>s/.5</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Total</strong>
                   </td>
-                  <td>$5678</td>
+                  <td>s./324</td>
                 </tr>
               </tbody>
             </table>
             <button type="submit" onClick={placeOrderHandler}>
-              <Link to="/order" className="text-white">
                 PLACE ORDER
-              </Link>
             </button>
             {/* <div className="my-3 col-12">
                 <Message variant="alert-danger">{error}</Message>
